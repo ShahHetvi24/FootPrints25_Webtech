@@ -1,22 +1,38 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const userSchema = new Schema({
-  googleId: {
-    type: String,
-    sparse: true,
+const UserSchema = new mongoose.Schema(
+  {
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    email: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    displayName: {
+      type: String,
+      required: true,
+    },
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    avatar: {
+      type: String,
+      default: function () {
+        return `https://api.dicebear.com/7.x/bottts/svg?seed=${this._id}`;
+      },
+    },
+    isAnonymous: {
+      type: Boolean,
+      default: false,
+    },
   },
-  email: {
-    type: String,
-    sparse: true,
-  },
-  name: String,
-  avatar: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
-const User = mongoose.model("User", userSchema);
-module.exports = User;
+module.exports = mongoose.model("User", UserSchema);

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
+const authController = require("../controllers/authController");
 
 // Google OAuth routes
 router.get(
@@ -11,37 +12,23 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: `${
-      process.env.FRONTEND_URL || "http://localhost:3000"
-    }/login`,
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=auth_failed`,
   }),
   (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}`);
+    res.redirect(`${process.env.FRONTEND_URL}/`);
   }
 );
 
-// Get current user info
-router.get("/me", (req, res) => {
-  if (req.isAuthenticated()) {
-    const { _id, name, email, avatar } = req.user;
-    return res.status(200).json({
-      success: true,
-      user: { id: _id, name, email, avatar },
-    });
-  }
-  res.status(401).json({ success: false, message: "Not authenticated" });
-});
+// Anonymous user creation route
+router.post("/anonymous", authController.createAnonymousUser);
+
+// Get current user
+router.get("/user", authController.getCurrentUser);
+
+// Update user profile
+router.put("/profile", authController.updateProfile);
 
 // Logout route
-router.post("/logout", (req, res) => {
-  req.logout(function (err) {
-    if (err) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Error logging out" });
-    }
-    res.status(200).json({ success: true, message: "Logged out successfully" });
-  });
-});
+router.get("/logout", authController.logout);
 
 module.exports = router;

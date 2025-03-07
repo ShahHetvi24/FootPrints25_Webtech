@@ -6,7 +6,8 @@ const passport = require("./config/passport");
 const MongoStore = require("connect-mongo");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const crypto = require("crypto");
+const { createServer } = require("http");
+const socketSetup = require("./config/socket");
 const Redis = require("ioredis");
 
 // Initialize Redis client
@@ -16,29 +17,36 @@ const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 const confessionRoutes = require("./routes/confessions");
 const secretMessageRoutes = require("./routes/secretMessages");
 const authRoutes = require("./routes/auth");
+const roomRoutes = require("./routes/rooms");
 
 const app = express();
+const httpServer = createServer(app);
+
+// Setup Socket.io
+socketSetup(httpServer);
+
 app.use(cookieParser());
 
 // CORS setup
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [process.env.FRONTEND_URL,"http://192.168.1.6:5173/"] || "http://localhost:5173 ",
+    // origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
 
 // Session configuration
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-    cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 }, // 7 days
-  })
-);
+const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+  cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 }, // 7 days
+});
+
+app.use(sessionMiddleware);
 
 // Passport initialization
 app.use(passport.initialize());
@@ -52,6 +60,7 @@ app.get("/", (req, res) => res.send("Welcome to Secret Confessions API"));
 app.use("/api/v1/confessions", confessionRoutes);
 app.use("/api/v1/secret-messages", secretMessageRoutes);
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/rooms", roomRoutes);
 
 // Catch-all for undefined routes
 app.all("*", (req, res) => {
@@ -76,10 +85,29 @@ const setupCleanupJob = () => {
   setInterval(async () => {
     try {
       const now = new Date();
+      // Clean expired secret messages
       await mongoose.model("SecretMessage").deleteMany({
         expiresAt: { $lte: now },
         isRead: false,
       });
+
+      // Clean expired chat messages in rooms
+      const Room = mongoose.model("Room");
+      const rooms = await Room.find();
+
+      for (const room of rooms) {
+        const messageExpiryTime = room.messageExpiryHours || 24;
+        const expiryDate = new Date(
+          Date.now() - messageExpiryTime * 60 * 60 * 1000
+        );
+
+        room.messages = room.messages.filter(
+          (msg) => new Date(msg.createdAt) > expiryDate
+        );
+
+        await room.save();
+      }
+
       console.log("Expired messages cleanup completed");
     } catch (error) {
       console.error("Error cleaning up expired messages:", error);
@@ -94,6 +122,8 @@ mongoose
   .then(() => {
     console.log("Database connected...");
     setupCleanupJob();
-    app.listen(port, () => console.log(`Server listening on port ${port}!`));
+    httpServer.listen(port, () =>
+      console.log(`Server listening on port ${port}!`)
+    );
   })
   .catch((err) => console.error(err));

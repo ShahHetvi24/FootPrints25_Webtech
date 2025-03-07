@@ -1,33 +1,34 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+const crypto = require("crypto");
 
-const secretMessageSchema = new Schema({
-  content: {
-    type: String,
-    required: true,
+const SecretMessageSchema = new mongoose.Schema(
+  {
+    content: {
+      type: String,
+      required: true,
+    },
+    token: {
+      type: String,
+      required: true,
+      unique: true,
+      default: () => crypto.randomBytes(32).toString("hex"),
+    },
+    senderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
+    expiresAt: {
+      type: Date,
+      required: true,
+      default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+    },
+    isRead: {
+      type: Boolean,
+      default: false,
+    },
   },
-  uniqueId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  expiresAt: {
-    type: Date,
-    required: true,
-    index: true, // Index for faster deletion queries
-  },
-  isRead: {
-    type: Boolean,
-    default: false,
-  },
-  password: {
-    type: String,
-    default: null, // Optional password protection
-  },
-});
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("SecretMessage", secretMessageSchema);
+module.exports = mongoose.model("SecretMessage", SecretMessageSchema);

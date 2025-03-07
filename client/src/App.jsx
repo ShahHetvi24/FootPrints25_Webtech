@@ -1,24 +1,24 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { useState } from 'react'
-import Homepage from './components/Homepage'
-import TeatokPage from './components/TeatokPage'
-import LoginPage from "./components/Loginpage";
-import ChatWindow from "./components/ChatWindow";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import HomePage from './components/HomePage';
+import Login from './components/Loginpage';
+import ChatWindow from './components/ChatWindow';
+import Teatok from './components/TeatokPage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/home" element={<Homepage />} />
-        <Route path="/teatok" element={<TeatokPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/chat" element={<ChatWindow />} />
-      </Routes>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/teatok" element={<Teatok />} />
+          <Route path="/chat" element={<ChatWindow />} />
+        </Routes>
+      </div>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

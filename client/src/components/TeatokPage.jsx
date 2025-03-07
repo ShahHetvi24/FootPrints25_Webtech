@@ -7,6 +7,7 @@ import {
   Sprout,
   FlaskConical,
   Unplug,
+  MessageSquareHeart,
 } from "lucide-react";
 import CardSlider from "./CardSlider";
 
@@ -17,6 +18,12 @@ const Slider = () => {
   };
 
   const cardData = [
+    {
+      icon: <MessageSquareHeart size={170} color="white" />,
+      title: "Anonymi-Tea",
+      description:
+        "Create a custom anonymous link, spill the tea, no lie, no trace, just vibes!",
+    },
     {
       icon: <Orbit size={170} color="white" />,
       title: "Data Den",

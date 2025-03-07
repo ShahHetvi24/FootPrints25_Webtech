@@ -1,13 +1,15 @@
 import { X, Menu, Plus, SendHorizontal, ArrowLeft } from 'lucide-react';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const WhatsAppClone = () => {
-    const navigate = useNavigate();
-
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const handleBack = () => {
     navigate("/home");
   };
+  
   // Hardcoded chat data
   const [chats, setChats] = useState([
     {
@@ -84,9 +86,28 @@ const WhatsAppClone = () => {
     }
   ]);
 
-  const [selectedChat, setSelectedChat] = useState(chats[0]);
+  const [selectedChat, setSelectedChat] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Set the selected chat based on the navigation state or default to the first chat
+  useEffect(() => {
+    if (location.state && location.state.selectedChatName) {
+      const chatToSelect = chats.find(chat => chat.name === location.state.selectedChatName);
+      if (chatToSelect) {
+        handleChatSelect(chatToSelect);
+      } else {
+        setSelectedChat(chats[0]);
+      }
+    } else {
+      setSelectedChat(chats[0]);
+    }
+    
+    // On mobile, close sidebar if coming directly to a specific chat
+    if (location.state && location.state.selectedChatName && window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  }, [location.state]);
 
   const handleChatSelect = (chat) => {
     // Clear unread count when selecting a chat
@@ -104,7 +125,7 @@ const WhatsAppClone = () => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !selectedChat) return;
     
     const newMsg = {
       id: selectedChat.messages.length + 1,
@@ -143,11 +164,18 @@ const WhatsAppClone = () => {
     alert("Create new chat functionality would go here");
   };
 
+  // If no chat is selected yet (during initial load), show a loading state or default view
+  if (!selectedChat) {
+    return <div className="flex h-screen items-center justify-center bg-[var(--home-bg-color)]">
+      <p className="text-white">Loading chat...</p>
+    </div>;
+  }
+
   return (
     <div className="flex h-screen bg-[var(--home-bg-color)]">
       {/* Sidebar - conditionally rendered based on isSidebarOpen state */}
       {isSidebarOpen && (
-        <div className="w-full md:w-1/3 bg-white  flex flex-col z-10 h-full">
+        <div className="w-full md:w-1/3 bg-white flex flex-col z-10 h-full">
           <div className="bg-[var(--home-bg-color)] p-3 flex items-center justify-between">
             <div className="font-semibold text-white text-lg">TeaTok</div>
             <div className="flex space-x-2">

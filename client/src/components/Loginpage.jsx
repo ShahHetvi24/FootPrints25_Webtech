@@ -28,7 +28,7 @@ const LoginPage = () => {
           Login with Google
         </button>
         <div className="flex text-white mt-2 text-base justify-center text-center">
-  "Hey, want to spilling the tea or drop a confession? You don't even need login. Just vibe, speak truth, and keep it lowkey."
+  "Hey, want to spill the tea or drop a confession? You don't even need login. Just vibe, speak truth, and keep it lowkey."
 </div>
       </div>
     </div>

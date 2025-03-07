@@ -8,16 +8,20 @@ const Homepage = () => {
     navigate('/teatok'); // Navigate to /teatok
   };
 
+  const handleLoginClick = () => {
+    navigate('/login'); // Navigate to /teatok
+  };
+
   return (
     <div className="min-h-screen bg-[var(--home-bg-color)]">
       <nav className="px-6 py-4 flex justify-end">
-        <button className="bg-[var(--button-color)] text-white font-medium px-4 py-2 rounded-lg">
+        <button className="bg-[var(--button-color)] text-white font-medium px-4 py-2 rounded-lg" onClick={handleLoginClick}>
           Login
         </button>
       </nav>
       <div className="container mx-auto px-4 flex flex-col items-center justify-center text-center" style={{ minHeight: "calc(100vh - 80px)" }}>
         <div className="max-w-3xl mx-auto mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-[var(--dark-color)] mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-[var(--title-color)] mb-6">
             Welcome to <span className="text-[var(--title-color)]">DarkRoom</span>
           </h1>
           <p className="text-[20px] text-[var(--text-color)]">

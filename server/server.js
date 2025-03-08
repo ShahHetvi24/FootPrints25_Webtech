@@ -31,7 +31,7 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      secure: false, // Change to true in production (HTTPS)
+      secure: true, // Change to true in production (HTTPS)
       sameSite: "lax", // Ensures cookies work cross-origin
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     },

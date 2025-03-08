@@ -30,9 +30,8 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      httpOnly: true,
       secure: true, // Change to true in production (HTTPS)
-      sameSite: "lax", // Ensures cookies work cross-origin
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
   })

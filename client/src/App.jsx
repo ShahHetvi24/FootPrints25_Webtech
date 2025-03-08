@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import HomePage from './components/HomePage';
+import HomePage from './components/Homepage';
 import Login from './components/Loginpage';
 import ChatWindow from './components/ChatWindow';
 import Teatok from './components/TeatokPage';

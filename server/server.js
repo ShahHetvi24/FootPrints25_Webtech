@@ -80,7 +80,7 @@ redisClient.on("error", (err) => {
     // Test setting a key
     await redisClient.set("testKey", "Hello, Redis!");
     const value = await redisClient.get("testKey");
-    console.log("Redis Test Key Value:", value); // Should print "Hello, Redis!"
+    // console.log("Redis Test Key Value:", value); // Should print "Hello, Redis!"
   } catch (error) {
     console.error("❌ Redis Error:", error);
   }
@@ -191,10 +191,10 @@ app.post("/api/rooms", async (req, res) => {
       shareableLink, // Add this field
     });
 
-    console.log("Room object created:", room);
+    // console.log("Room object created:", room);
 
     const savedRoom = await room.save();
-    console.log("Room saved successfully:", savedRoom);
+    // console.log("Room saved successfully:", savedRoom);
 
     res.status(201).json(savedRoom);
   } catch (err) {
@@ -276,11 +276,11 @@ app.post("/api/secret-messages", async (req, res) => {
         viewed: false,
       });
 
-      console.log("Secret message created:", secretMessage);
+      // console.log("Secret message created:", secretMessage);
 
       // Save to MongoDB
       const savedMessage = await secretMessage.save();
-      console.log("Secret message saved successfully:", savedMessage._id);
+      // console.log("Secret message saved successfully:", savedMessage._id);
 
       // Try Redis storage but continue even if it fails
       try {
@@ -290,7 +290,7 @@ app.post("/api/secret-messages", async (req, res) => {
           "EX",
           expiresInHours * 60 * 60
         );
-        console.log("Secret message also saved to Redis");
+        // console.log("Secret message also saved to Redis");
       } catch (redisErr) {
         console.error("Redis storage failed but continuing:", redisErr);
       }
@@ -351,7 +351,7 @@ app.get("/api/secret-messages/:uniqueId", async (req, res) => {
     // Schedule deletion after response is sent
     setTimeout(async () => {
       await SecretMessage.deleteOne({ uniqueId });
-      console.log(`Secret message ${uniqueId} deleted`);
+      // console.log(`Secret message ${uniqueId} deleted`);
     }, 1000);
 
     res.json({
@@ -366,11 +366,11 @@ app.get("/api/secret-messages/:uniqueId", async (req, res) => {
 
 // Socket.io setup for real-time chat
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  // console.log("User connected:", socket.id);
 
   socket.on("join_room", async (roomId) => {
     socket.join(roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
+    // console.log(`User ${socket.id} joined room ${roomId}`);
 
     // Send last 50 messages for this room
     try {
@@ -386,7 +386,7 @@ io.on("connection", (socket) => {
 
   socket.on("leave_room", (roomId) => {
     socket.leave(roomId);
-    console.log(`User ${socket.id} left room ${roomId}`);
+    // console.log(`User ${socket.id} left room ${roomId}`);
   });
 
   socket.on("send_message", async (data) => {
@@ -418,14 +418,14 @@ io.on("connection", (socket) => {
         timestamp: message.timestamp,
       });
 
-      console.log(`Message sent in room ${room} by ${sender}`);
+      // console.log(`Message sent in room ${room} by ${sender}`);
     } catch (err) {
       console.error("Error sending message:", err);
     }
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    // console.log("User disconnected:", socket.id);
   });
 });
 
@@ -443,7 +443,7 @@ setInterval(async () => {
     // Delete expired chat messages
     await Message.deleteMany({ expiresAt: { $lte: now } });
 
-    console.log("Cleanup job completed:", new Date());
+    // console.log("Cleanup job completed:", new Date());
   } catch (err) {
     console.error("Error in cleanup job:", err);
   }

@@ -1,14 +1,45 @@
 // server.js
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+const passport = require("./config/passport.js");
+const session = require("express-session");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const cors = require("cors");
 const { createClient } = require("redis");
+const MongoStore = require("connect-mongo");
 
 // Initialize Express app
 const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
+    }),
+    cookie: {
+      httpOnly: true,
+      secure: false, // Change to true in production (HTTPS)
+      sameSite: "lax", // Ensures cookies work cross-origin
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -18,7 +49,7 @@ const io = socketIo(server, {
 });
 
 // Middleware
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
@@ -93,6 +124,8 @@ const Confession = mongoose.model("Confession", ConfessionSchema);
 const SecretMessage = mongoose.model("SecretMessage", SecretMessageSchema);
 
 // API Routes for Rooms
+app.use("/api/v1/auth", require("./routes/auth"));
+
 app.get("/api/rooms", async (req, res) => {
   try {
     const rooms = await Room.find().sort({ createdAt: -1 });

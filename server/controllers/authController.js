@@ -68,12 +68,4 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// Logout
-exports.logout = (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      return res.status(500).json({ message: "Logout error", error: err });
-    }
-    res.json({ message: "Logged out successfully" });
-  });
-};
+

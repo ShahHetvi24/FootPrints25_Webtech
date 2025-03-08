@@ -8,7 +8,7 @@ function Navbar() {
   // Fetch user session on mount
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/v1/auth/getProfile", {
+      .get("https://footprints25-webtech.onrender.com/api/v1/auth/getProfile", {
         withCredentials: true,
       })
       .then((res) => {
@@ -23,14 +23,14 @@ function Navbar() {
 
   // Redirect to Google OAuth
   const handleLogin = () => {
-    window.location.href = "http://localhost:8000/api/v1/auth/google";
+    window.location.href = "https://footprints25-webtech.onrender.com/api/v1/auth/google";
   };
 
   // Logout function
   const handleLogout = () => {
     axios
       .post(
-        "http://localhost:8000/api/v1/auth/logout",
+        "https://footprints25-webtech.onrender.com/api/v1/auth/logout",
         {},
         { withCredentials: true }
       )

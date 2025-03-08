@@ -18,10 +18,10 @@ import ViewSecretMessage from "./components/ViewSecretMessage";
 import Navbar from "./components/Navbar";
 
 // Set up axios defaults
-axios.defaults.baseURL = "http://localhost:8000";
+axios.defaults.baseURL = "https://footprints25-webtech.onrender.com/";
 
 // Initialize socket connection
-const socket = io("http://localhost:8000");
+const socket = io("https://footprints25-webtech.onrender.com/");
 
 function App() {
   const [username, setUsername] = useState("");

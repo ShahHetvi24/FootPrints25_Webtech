@@ -1,129 +1,338 @@
-require("dotenv").config();
+// server.js
 const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
 const mongoose = require("mongoose");
-const session = require("express-session");
-const passport = require("./config/passport");
-const MongoStore = require("connect-mongo");
+const crypto = require("crypto");
 const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const { createServer } = require("http");
-const socketSetup = require("./config/socket");
-const Redis = require("ioredis");
+const { createClient } = require("redis");
 
-// Initialize Redis client
-const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
-
-// Import route files
-const confessionRoutes = require("./routes/confessions");
-const secretMessageRoutes = require("./routes/secretMessages");
-const authRoutes = require("./routes/auth");
-const roomRoutes = require("./routes/rooms");
-
+// Initialize Express app
 const app = express();
-const httpServer = createServer(app);
-
-// Setup Socket.io
-socketSetup(httpServer);
-
-app.use(cookieParser());
-
-// CORS setup
-app.use(
-  cors({
-    origin: [process.env.FRONTEND_URL,"http://192.168.1.6:5173/"] || "http://localhost:5173 ",
-    // origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
-
-// Session configuration
-const sessionMiddleware = session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-  cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 }, // 7 days
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
 });
 
-app.use(sessionMiddleware);
-
-// Passport initialization
-app.use(passport.initialize());
-app.use(passport.session());
-
-// JSON middleware
+// Middleware
+app.use(cors());
 app.use(express.json());
 
-// Routes
-app.get("/", (req, res) => res.send("Welcome to Secret Confessions API"));
-app.use("/api/v1/confessions", confessionRoutes);
-app.use("/api/v1/secret-messages", secretMessageRoutes);
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/rooms", roomRoutes);
+// Connect to MongoDB
+mongoose
+  .connect(
+    "mongodb+srv://manchopda1508:IZlV3cVgEeUK3I1m@secret-confessions.btxgq.mongodb.net/?retryWrites=true&w=majority&appName=secret-confessions",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
-// Catch-all for undefined routes
-app.all("*", (req, res) => {
-  res.status(404).json({ success: false, message: "Resource not found" });
+// Initialize Redis client
+const redisClient = createClient({
+  url: "redis://default:rffCO5niPS8kyWa9cn1dZrn7amJLEJ4Q@redis-12638.c325.us-east-1-4.ec2.redns.redis-cloud.com:12638",
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
+redisClient.on("connect", () => {
+  console.log("✅ Connected to Redis successfully!");
+});
 
-  if (err.name === "UnauthorizedError") {
-    return res.status(401).json({ message: "Unauthorized" });
-  } else if (err.name === "NotFoundError") {
-    return res.status(404).json({ message: "Resource not found" });
+redisClient.on("error", (err) => {
+  console.error("❌ Redis connection error:", err);
+});
+
+(async () => {
+  try {
+    await redisClient.connect();
+    // Test setting a key
+    await redisClient.set("testKey", "Hello, Redis!");
+    const value = await redisClient.get("testKey");
+    console.log("Redis Test Key Value:", value); // Should print "Hello, Redis!"
+  } catch (error) {
+    console.error("❌ Redis Error:", error);
   }
+})();
 
-  res.status(500).json({ message: "Internal server error" });
+// Models
+const MessageSchema = new mongoose.Schema({
+  content: String,
+  room: String,
+  sender: String,
+  timestamp: { type: Date, default: Date.now },
+  expiresAt: Date,
 });
 
-// Setup cleanup job for expired messages
-const setupCleanupJob = () => {
-  setInterval(async () => {
-    try {
-      const now = new Date();
-      // Clean expired secret messages
-      await mongoose.model("SecretMessage").deleteMany({
-        expiresAt: { $lte: now },
-        isRead: false,
-      });
+const RoomSchema = new mongoose.Schema({
+  name: String,
+  description: String,
+  createdAt: { type: Date, default: Date.now },
+});
 
-      // Clean expired chat messages in rooms
-      const Room = mongoose.model("Room");
-      const rooms = await Room.find();
+const ConfessionSchema = new mongoose.Schema({
+  content: String,
+  createdAt: { type: Date, default: Date.now },
+  expiresAt: Date,
+});
 
-      for (const room of rooms) {
-        const messageExpiryTime = room.messageExpiryHours || 24;
-        const expiryDate = new Date(
-          Date.now() - messageExpiryTime * 60 * 60 * 1000
-        );
+const SecretMessageSchema = new mongoose.Schema({
+  content: String,
+  uniqueId: { type: String, unique: true },
+  createdAt: { type: Date, default: Date.now },
+  expiresAt: Date,
+  viewed: { type: Boolean, default: false },
+});
 
-        room.messages = room.messages.filter(
-          (msg) => new Date(msg.createdAt) > expiryDate
-        );
+const Message = mongoose.model("Message", MessageSchema);
+const Room = mongoose.model("Room", RoomSchema);
+const Confession = mongoose.model("Confession", ConfessionSchema);
+const SecretMessage = mongoose.model("SecretMessage", SecretMessageSchema);
 
-        await room.save();
+// API Routes for Rooms
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const rooms = await Room.find().sort({ createdAt: -1 });
+    res.json(rooms);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/rooms", async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const room = new Room({ name, description });
+    await room.save();
+    res.status(201).json(room);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API Routes for Public Confessions
+app.get("/api/confessions", async (req, res) => {
+  try {
+    const confessions = await Confession.find({
+      expiresAt: { $gt: new Date() },
+    }).sort({ createdAt: -1 });
+    res.json(confessions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/confessions", async (req, res) => {
+  try {
+    const { content, expiresInHours = 24 } = req.body;
+
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + expiresInHours);
+
+    const confession = new Confession({
+      content,
+      expiresAt,
+    });
+
+    await confession.save();
+    res.status(201).json(confession);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API Routes for Secret Messages
+app.post("/api/secret-messages", async (req, res) => {
+  try {
+    const { content, expiresInHours = 24 } = req.body;
+
+    // Validate input
+    if (!content || content.trim() === "") {
+      return res.status(400).json({ error: "Content cannot be empty" });
+    }
+
+    if (
+      typeof expiresInHours !== "number" ||
+      expiresInHours <= 0 ||
+      expiresInHours > 168
+    ) {
+      return res
+        .status(400)
+        .json({ error: "expiresInHours must be between 1 and 168" });
+    }
+
+    const uniqueId = crypto.randomBytes(16).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + expiresInHours);
+
+    const secretMessage = new SecretMessage({
+      content,
+      uniqueId,
+      expiresAt,
+      viewed: false,
+    });
+
+    await secretMessage.save();
+
+    // Try Redis storage but continue even if it fails
+    await redisClient.set(
+      `secret_message:${uniqueId}`,
+      JSON.stringify({ content, createdAt: new Date() }),
+      "EX",
+      expiresInHours * 60 * 60
+    );
+
+    res.status(201).json({
+      message: "Secret message created",
+      link: `/view/${uniqueId}`,
+      expiresAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/secret-messages/:uniqueId", async (req, res) => {
+  try {
+    const { uniqueId } = req.params;
+
+    // First check in MongoDB
+    const secretMessage = await SecretMessage.findOne({
+      uniqueId,
+      viewed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!secretMessage) {
+      // Try Redis as fallback if MongoDB lookup failed
+      const redisMessage = await redisClient.get(`secret_message:${uniqueId}`);
+
+      if (!redisMessage) {
+        return res.status(404).json({
+          error: "Message not found or already viewed",
+        });
       }
 
-      console.log("Expired messages cleanup completed");
-    } catch (error) {
-      console.error("Error cleaning up expired messages:", error);
-    }
-  }, 60 * 60 * 1000); // Run every hour
-};
+      // Delete from Redis after retrieving
+      await redisClient.del(`secret_message:${uniqueId}`);
 
-// Start server and connect to database
-const port = process.env.PORT || 5000;
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("Database connected...");
-    setupCleanupJob();
-    httpServer.listen(port, () =>
-      console.log(`Server listening on port ${port}!`)
-    );
-  })
-  .catch((err) => console.error(err));
+      const parsedMessage = JSON.parse(redisMessage);
+      return res.json({
+        content: parsedMessage.content,
+        createdAt: parsedMessage.createdAt,
+      });
+    }
+
+    // Mark as viewed in MongoDB
+    secretMessage.viewed = true;
+    await secretMessage.save();
+
+    // Schedule deletion after response is sent
+    setTimeout(async () => {
+      await SecretMessage.deleteOne({ uniqueId });
+      console.log(`Secret message ${uniqueId} deleted`);
+    }, 1000);
+
+    res.json({
+      content: secretMessage.content,
+      createdAt: secretMessage.createdAt,
+      expiresAt: secretMessage.expiresAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Socket.io setup for real-time chat
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("join_room", async (roomId) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined room ${roomId}`);
+
+    // Send last 50 messages for this room
+    try {
+      const messages = await Message.find({ room: roomId })
+        .sort({ timestamp: -1 })
+        .limit(50);
+
+      socket.emit("message_history", messages.reverse());
+    } catch (err) {
+      console.error("Error fetching message history:", err);
+    }
+  });
+
+  socket.on("leave_room", (roomId) => {
+    socket.leave(roomId);
+    console.log(`User ${socket.id} left room ${roomId}`);
+  });
+
+  socket.on("send_message", async (data) => {
+    try {
+      const { content, room, sender, expiresInHours = 24 } = data;
+
+      if (!content || !room || !sender) {
+        return;
+      }
+
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + expiresInHours);
+
+      // Save message to MongoDB
+      const message = new Message({
+        content,
+        room,
+        sender,
+        timestamp: new Date(),
+        expiresAt,
+      });
+
+      await message.save();
+
+      // Emit message to all users in the room
+      io.to(room).emit("receive_message", {
+        content,
+        sender,
+        timestamp: message.timestamp,
+      });
+
+      console.log(`Message sent in room ${room} by ${sender}`);
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+// Cron job to delete expired content (runs every hour)
+setInterval(async () => {
+  try {
+    const now = new Date();
+
+    // Delete expired confessions
+    await Confession.deleteMany({ expiresAt: { $lte: now } });
+
+    // Delete expired secret messages
+    await SecretMessage.deleteMany({ expiresAt: { $lte: now } });
+
+    // Delete expired chat messages
+    await Message.deleteMany({ expiresAt: { $lte: now } });
+
+    console.log("Cleanup job completed:", new Date());
+  } catch (err) {
+    console.error("Error in cleanup job:", err);
+  }
+}, 60 * 60 * 1000); // Run every hour
+
+// Start the server
+const PORT = process.env.PORT || 8000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

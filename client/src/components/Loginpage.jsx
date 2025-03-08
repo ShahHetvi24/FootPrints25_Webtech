@@ -1,9 +1,26 @@
-import React from "react";
+import React, { use, useEffect } from "react";
 import { Users, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get("/api/auth");
+        if (response.data.authenticated) {
+          navigate("/home");
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    checkAuth();
+  },[]
+);
 
   const handleBack = () => {
     navigate("/home");

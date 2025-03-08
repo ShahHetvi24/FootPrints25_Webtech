@@ -56,11 +56,17 @@ function ConfessionFeed() {
   };
 
   return (
-    <div className="confession-feed">
-      <h2>Public Confessions</h2>
+    <div className="confession-feed w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
+      <h2 className="text-center mb-4 sm:mb-6 text-2xl sm:text-3xl font-semibold text-white">
+        Public Confessions
+      </h2>
 
-      <form className="confession-form" onSubmit={postConfession}>
+      <form
+        className="confession-form mb-6 sm:mb-8 bg-white bg-opacity-90 p-4 sm:p-6 rounded-lg shadow"
+        onSubmit={postConfession}
+      >
         <textarea
+          className="w-full p-3 border border-gray-300 rounded resize-vertical font-inherit mb-4"
           placeholder="Share your anonymous confession..."
           value={newConfession}
           onChange={(e) => setNewConfession(e.target.value)}
@@ -68,10 +74,11 @@ function ConfessionFeed() {
           required
         />
 
-        <div className="form-controls">
-          <div className="expiry-control">
-            <label>Expires in:</label>
+        <div className="form-controls flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="expiry-control flex items-center">
+            <label className="mr-2 text-gray-800">Expires in:</label>
             <select
+              className="p-2 border border-gray-300 rounded bg-white"
               value={expiresIn}
               onChange={(e) => setExpiresIn(parseInt(e.target.value))}
             >
@@ -84,17 +91,27 @@ function ConfessionFeed() {
             </select>
           </div>
 
-          <button type="submit">Post Anonymously</button>
+          <button
+            className="px-4 py-2 bg-red-400 text-white border-none rounded cursor-pointer transition-colors duration-300 hover:bg-red-500 w-full sm:w-auto"
+            type="submit"
+          >
+            Post Anonymously
+          </button>
         </div>
       </form>
 
-      <div className="confessions-list">
+      <div className="confessions-list flex flex-col gap-4">
         {confessions.length > 0 ? (
           confessions.map((confession) => (
-            <div key={confession._id} className="confession-card">
-              <p className="confession-content">{confession.content}</p>
-              <div className="confession-footer">
-                <span className="confession-time">
+            <div
+              key={confession._id}
+              className="confession-card bg-white p-4 sm:p-5 rounded-lg shadow"
+            >
+              <p className="confession-content mb-3 whitespace-pre-wrap break-words">
+                {confession.content}
+              </p>
+              <div className="confession-footer flex flex-col sm:flex-row justify-between text-xs sm:text-sm text-gray-500">
+                <span className="confession-time mb-1 sm:mb-0">
                   {new Date(confession.createdAt).toLocaleString()}
                 </span>
                 <span className="confession-expiry">
@@ -104,7 +121,7 @@ function ConfessionFeed() {
             </div>
           ))
         ) : (
-          <p className="no-confessions">
+          <p className="no-confessions text-center py-8 bg-white rounded-lg shadow text-gray-600">
             No confessions yet. Be the first to share!
           </p>
         )}

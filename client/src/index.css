@@ -73,9 +73,9 @@
   text-align: center;
 }
 
-.login-container h2 {
+.login-title {
   margin-bottom: 20px;
-  color: #fff;
+  /* color: #fff; */
   font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   font-size: 10vh;
   font-weight: 600;

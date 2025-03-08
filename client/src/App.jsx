@@ -19,6 +19,8 @@ import ViewSecretMessage from "./components/ViewSecretMessage";
 import Navbar from "./components/Navbar";
 import LetterGlitch from "./components/LetterGlitch";
 
+import BlurText from "./components/BlurText";
+
 // Set up axios defaults
 axios.defaults.baseURL = "https://footprints25-webtech.onrender.com/";
 // axios.defaults.baseURL = "http://localhost:8000/";
@@ -41,7 +43,31 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <div className="login-container">
-      <h2>Welcome to DarkRoom</h2>
+      {/* <h2>Welcome to DarkRoom</h2> */}
+      <BlurText
+        text="Welcome to DarkRoom"
+        delay={150}
+        animateBy="letter"
+        direction="bottom"
+        threshold={0.1}
+        rootMargin="0px"
+        animationFrom={{  
+          filter: "blur(10px)", 
+          opacity: 0,
+          transform: "translate3d(0,50px,0)",
+        }}
+        animationTo={[
+          {
+            filter: "blur(5px)",
+            opacity: 0.5,
+            transform: "translate3d(0,5px,0)",
+          },
+          { filter: "blur(0px)", opacity: 1, transform: "translate3d(0,0,0)" },
+        ]}
+        easing="easeOutCubic"
+        // onAnimationComplete={handleAnimationComplete}
+        className="login-title"
+      />
       <div className="login-input">
         <input
           type="text"
@@ -50,7 +76,9 @@ const LoginPage = ({ onLogin }) => {
         />
         <button onClick={handleLogin}>Enter</button>
       </div>
-        <span className="bg-black/70">Enter a username to continue or remain anonymous</span>
+      <span className="bg-black/70">
+        Enter a username to continue or remain anonymous
+      </span>
     </div>
   );
 };

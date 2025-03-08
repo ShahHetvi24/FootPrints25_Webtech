@@ -15,7 +15,7 @@ const MongoStore = require("connect-mongo");
 const app = express();
 app.use(
   cors({
-    origin: "https://melodic-froyo-ddbd3a.netlify.app",
+    origin: process.env.FRONTEND_URL,
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -63,7 +63,7 @@ mongoose
 
 // Initialize Redis client
 const redisClient = createClient({
-  url: "redis://default:rffCO5niPS8kyWa9cn1dZrn7amJLEJ4Q@redis-12638.c325.us-east-1-4.ec2.redns.redis-cloud.com:12638",
+  url: process.env.REDIS_URL,
 });
 
 redisClient.on("connect", () => {

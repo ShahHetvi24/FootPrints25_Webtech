@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-spring/web": "^9.7.5",
     "axios": "^1.8.2",
+    "framer-motion": "^12.4.10",
     "lucide-react": "^0.477.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
+    "react-toastify": "^11.0.5",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {

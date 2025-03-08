@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { io } from "socket.io-client";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 // import "./App.css";
 
 // Components
@@ -19,8 +20,6 @@ import ViewSecretMessage from "./components/ViewSecretMessage";
 import Navbar from "./components/Navbar";
 import LetterGlitch from "./components/LetterGlitch";
 
-import BlurText from "./components/BlurText";
-
 // Set up axios defaults
 axios.defaults.baseURL = "https://footprints25-webtech.onrender.com/";
 // axios.defaults.baseURL = "http://localhost:8000/";
@@ -28,6 +27,28 @@ axios.defaults.baseURL = "https://footprints25-webtech.onrender.com/";
 // Initialize socket connection
 const socket = io("https://footprints25-webtech.onrender.com/");
 // const socket = io("http://localhost:8000/");
+
+// Page transition variants
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
 
 // Login Component
 const LoginPage = ({ onLogin }) => {
@@ -42,48 +63,53 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div className="login-container">
-      {/* <h2>Welcome to DarkRoom</h2> */}
-      <BlurText
-        text="Welcome to DarkRoom"
-        delay={150}
-        animateBy="letter"
-        direction="bottom"
-        threshold={0.1}
-        rootMargin="0px"
-        animationFrom={{  
-          filter: "blur(10px)", 
-          opacity: 0,
-          transform: "translate3d(0,50px,0)",
-        }}
-        animationTo={[
-          {
-            filter: "blur(5px)",
-            opacity: 0.5,
-            transform: "translate3d(0,5px,0)",
-          },
-          { filter: "blur(0px)", opacity: 1, transform: "translate3d(0,0,0)" },
-        ]}
-        easing="easeOutCubic"
-        // onAnimationComplete={handleAnimationComplete}
+    <motion.div
+      className="login-container"
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
+    >
+      <motion.h2
         className="login-title"
-      />
-      <div className="login-input">
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+      >
+        Welcome to DarkRoom
+      </motion.h2>
+      <motion.div
+        className="login-input"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+      >
         <input
           type="text"
           placeholder="Username (optional)"
           onChange={(e) => setUsername(e.target.value)}
         />
-        <button onClick={handleLogin}>Enter</button>
-      </div>
-      <span className="bg-black/70">
+        <motion.button
+          onClick={handleLogin}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Enter
+        </motion.button>
+      </motion.div>
+      <motion.span
+        className="bg-black/70"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+      >
         Enter a username to continue or remain anonymous
-      </span>
-    </div>
+      </motion.span>
+    </motion.div>
   );
 };
 
-// Rooms Component
+// Rooms Component with enhanced animations
 const RoomsPage = ({ username, socket }) => {
   const [activeRoom, setActiveRoom] = useState(null);
 
@@ -96,26 +122,151 @@ const RoomsPage = ({ username, socket }) => {
     setActiveRoom(roomId);
   };
 
+  // Enhanced animation variants
+  const containerVariants = {
+    initial: { opacity: 0 },
+    animate: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+      },
+    },
+    exit: {
+      opacity: 0,
+      transition: {
+        duration: 0.4,
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const roomsListVariants = {
+    initial: { opacity: 0, x: -100 },
+    animate: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+      },
+    },
+    exit: {
+      opacity: 0,
+      x: -50,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const chatContainerVariants = {
+    initial: { opacity: 0, x: 100 },
+    animate: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 80,
+        damping: 15,
+        delay: 0.2,
+      },
+    },
+    exit: {
+      opacity: 0,
+      x: 50,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const welcomeMessageVariants = {
+    initial: { opacity: 0, scale: 0.9 },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        delay: 0.3,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      transition: { duration: 0.2 },
+    },
+  };
+
+  const titleVariants = {
+    initial: { opacity: 0, y: -20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        delay: 0.5,
+      },
+    },
+  };
+
+  const subtitleVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        delay: 0.7,
+      },
+    },
+  };
+
   return (
-    <div className="main-container">
-      <div className="rooms-container">
+    <motion.div
+      className="main-container"
+      variants={containerVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
+      <motion.div className="rooms-container" variants={roomsListVariants}>
         <RoomsList onRoomSelect={joinRoom} activeRoom={activeRoom} />
-      </div>
-      <div className="chat-container">
-        {activeRoom ? (
-          <ChatComponent
-            room={activeRoom}
-            username={username}
-            socket={socket}
-          />
-        ) : (
-          <div className="select-room-message">
-            <h2>Welcome to TeaTok Room</h2>
-            <p>Select a room from the left sidebar to start chatting</p>
-          </div>
-        )}
-      </div>
-    </div>
+      </motion.div>
+      <motion.div className="chat-container" variants={chatContainerVariants}>
+        <AnimatePresence mode="wait">
+          {activeRoom ? (
+            <motion.div
+              key="chat"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{
+                type: "spring",
+                stiffness: 200,
+                damping: 20,
+              }}
+            >
+              <ChatComponent
+                room={activeRoom}
+                username={username}
+                socket={socket}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="welcome"
+              className="select-room-message"
+              variants={welcomeMessageVariants}
+            >
+              <motion.h2 variants={titleVariants}>
+                Welcome to TeaTok Room
+              </motion.h2>
+              <motion.p variants={subtitleVariants}>
+                Select a room from the left sidebar to start chatting
+              </motion.p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -176,25 +327,60 @@ function App() {
             onLogout={handleLogout}
           />
 
-          <Routes>
-            <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
+          <AnimatePresence mode="wait">
+            <Routes>
+              <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
 
-            <Route
-              path="/rooms"
-              element={<RoomsPage username={username} socket={socket} />}
-            />
+              <Route
+                path="/rooms"
+                element={<RoomsPage username={username} socket={socket} />}
+              />
 
-            <Route path="/confessions" element={<ConfessionFeed />} />
+              <Route
+                path="/confessions"
+                element={
+                  <motion.div
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={pageVariants}
+                  >
+                    <ConfessionFeed />
+                  </motion.div>
+                }
+              />
 
-            <Route
-              path="/create-secret"
-              element={<CreateSecretMessage username={username} />}
-            />
+              <Route
+                path="/create-secret"
+                element={
+                  <motion.div
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={pageVariants}
+                  >
+                    <CreateSecretMessage username={username} />
+                  </motion.div>
+                }
+              />
 
-            <Route path="/view/:uniqueId" element={<ViewSecretMessage />} />
+              <Route
+                path="/view/:uniqueId"
+                element={
+                  <motion.div
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={pageVariants}
+                  >
+                    <ViewSecretMessage />
+                  </motion.div>
+                }
+              />
 
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </AnimatePresence>
         </div>
       </div>
     </Router>

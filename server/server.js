@@ -15,7 +15,7 @@ const MongoStore = require("connect-mongo");
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://melodic-froyo-ddbd3a.netlify.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })

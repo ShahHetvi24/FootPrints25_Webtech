@@ -8,7 +8,7 @@ function Navbar({ isLoggedIn, username, onLogout }) {
       <div className="nav-brand">
         <div className='flex items-center margin-left-10'>
 
-        <img src="../assets/darkRoom.png" className='w-7' alt="" />
+        <img src="https://res.cloudinary.com/dqyqncjpd/image/upload/f_auto,q_auto/v1/Port/pq6dvblperd74i8wyccg " className='w-7' alt="" />
         <Link to="/">DarkRoom</Link>
         </div>
       </div>

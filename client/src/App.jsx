@@ -21,9 +21,11 @@ import LetterGlitch from "./components/LetterGlitch";
 
 // Set up axios defaults
 axios.defaults.baseURL = "https://footprints25-webtech.onrender.com/";
+// axios.defaults.baseURL = "http://localhost:8000/";
 
 // Initialize socket connection
 const socket = io("https://footprints25-webtech.onrender.com/");
+// const socket = io("http://localhost:8000/");
 
 // Login Component
 const LoginPage = ({ onLogin }) => {

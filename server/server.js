@@ -54,13 +54,10 @@ app.use(express.json());
 
 // Connect to MongoDB
 mongoose
-  .connect(
-    "mongodb+srv://manchopda1508:IZlV3cVgEeUK3I1m@secret-confessions.btxgq.mongodb.net/?retryWrites=true&w=majority&appName=secret-confessions",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
@@ -99,8 +96,24 @@ const MessageSchema = new mongoose.Schema({
 });
 
 const RoomSchema = new mongoose.Schema({
-  name: String,
-  description: String,
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    trim: true,
+  },
+  shareableLink: {
+    type: String,
+    unique: true,
+    sparse: true, // This allows multiple documents to have null values
+    default: function () {
+      // Generate a random link if none is provided
+      return crypto.randomBytes(8).toString("hex");
+    },
+  },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -111,11 +124,37 @@ const ConfessionSchema = new mongoose.Schema({
 });
 
 const SecretMessageSchema = new mongoose.Schema({
-  content: String,
-  uniqueId: { type: String, unique: true },
-  createdAt: { type: Date, default: Date.now },
-  expiresAt: Date,
-  viewed: { type: Boolean, default: false },
+  content: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  uniqueId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+  token: {
+    type: String,
+    unique: true,
+    sparse: true, // Allow multiple null values
+    default: function () {
+      // Generate a random token if none is provided
+      return crypto.randomBytes(12).toString("hex");
+    },
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  expiresAt: {
+    type: Date,
+    required: true,
+  },
+  viewed: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Message = mongoose.model("Message", MessageSchema);
@@ -138,13 +177,35 @@ app.get("/api/rooms", async (req, res) => {
 app.post("/api/rooms", async (req, res) => {
   try {
     const { name, description } = req.body;
-    const room = new Room({ name, description });
-    await room.save();
-    res.status(201).json(room);
+
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ error: "Room name is required" });
+    }
+
+    // Generate a unique link for each room
+    const shareableLink = crypto.randomBytes(8).toString("hex");
+
+    const room = new Room({
+      name: name.trim(),
+      description: description ? description.trim() : "",
+      shareableLink, // Add this field
+    });
+
+    console.log("Room object created:", room);
+
+    const savedRoom = await room.save();
+    console.log("Room saved successfully:", savedRoom);
+
+    res.status(201).json(savedRoom);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error saving room:", err);
+    res.status(500).json({
+      error: "Failed to save room",
+      details: err.message,
+    });
   }
 });
+
 
 // API Routes for Public Confessions
 app.get("/api/confessions", async (req, res) => {
@@ -197,33 +258,57 @@ app.post("/api/secret-messages", async (req, res) => {
         .json({ error: "expiresInHours must be between 1 and 168" });
     }
 
+    // Generate required IDs
     const uniqueId = crypto.randomBytes(16).toString("hex");
+    const token = crypto.randomBytes(12).toString("hex");
+
+    // Calculate expiration time
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + expiresInHours);
 
-    const secretMessage = new SecretMessage({
-      content,
-      uniqueId,
-      expiresAt,
-      viewed: false,
-    });
+    try {
+      // Create the secret message document with token field
+      const secretMessage = new SecretMessage({
+        content: content.trim(),
+        uniqueId,
+        token, // Add this field
+        expiresAt,
+        viewed: false,
+      });
 
-    await secretMessage.save();
+      console.log("Secret message created:", secretMessage);
 
-    // Try Redis storage but continue even if it fails
-    await redisClient.set(
-      `secret_message:${uniqueId}`,
-      JSON.stringify({ content, createdAt: new Date() }),
-      "EX",
-      expiresInHours * 60 * 60
-    );
+      // Save to MongoDB
+      const savedMessage = await secretMessage.save();
+      console.log("Secret message saved successfully:", savedMessage._id);
 
-    res.status(201).json({
-      message: "Secret message created",
-      link: `/view/${uniqueId}`,
-      expiresAt,
-    });
+      // Try Redis storage but continue even if it fails
+      try {
+        await redisClient.set(
+          `secret_message:${uniqueId}`,
+          JSON.stringify({ content, createdAt: new Date() }),
+          "EX",
+          expiresInHours * 60 * 60
+        );
+        console.log("Secret message also saved to Redis");
+      } catch (redisErr) {
+        console.error("Redis storage failed but continuing:", redisErr);
+      }
+
+      res.status(201).json({
+        message: "Secret message created",
+        link: `/view/${uniqueId}`,
+        expiresAt,
+      });
+    } catch (saveErr) {
+      console.error("Error saving secret message to MongoDB:", saveErr);
+      res.status(500).json({
+        error: "Failed to save secret message",
+        details: saveErr.message,
+      });
+    }
   } catch (err) {
+    console.error("Unexpected error in secret message creation:", err);
     res.status(500).json({ error: err.message });
   }
 });

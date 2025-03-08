@@ -114,7 +114,7 @@ function CreateSecretMessage({ username }) {
               readOnly
             />
             <button
-              className="py-2 px-4 md:py-3 md:px-5 bg-blue-500 text-white border-none rounded-b-md sm:rounded-bl-none sm:rounded-r-md cursor-pointer transition-colors hover:bg-blue-600 text-sm md:text-base"
+              className="py-2 px-4 md:py-3 md:px-5 bg-custom-pink text-white border-none rounded-b-md sm:rounded-bl-none sm:rounded-r-md cursor-pointer transition-colors text-sm md:text-base"
               onClick={copyToClipboard}
             >
               {copySuccess || "Copy"}
@@ -131,7 +131,7 @@ function CreateSecretMessage({ username }) {
           </div>
 
           <button
-            className="create-new-btn py-2 px-4 md:py-3 md:px-5 bg-green-500 text-white border-none rounded-md cursor-pointer mt-2 transition-colors hover:bg-green-600 text-sm md:text-base"
+            className="create-new-btn py-2 px-4 md:py-3 md:px-5 bg-custom-pink text-white border-none rounded-md cursor-pointer mt-2 transition-colors text-sm md:text-base"
             onClick={() => setSecretLink("")}
           >
             Create Another Secret

@@ -65,7 +65,7 @@ function ViewSecretMessage() {
           <h2>Message Not Found</h2>
           <p>{error}</p>
           <p>The message may have been already viewed or expired.</p>
-          <button onClick={() => navigate("/")}>Return Home</button>
+          <button className="bg-[#C5757C]" onClick={() => navigate("/")}>Return Home</button>
         </div>
       </div>
     );

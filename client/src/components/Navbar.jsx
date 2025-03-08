@@ -44,7 +44,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="nav-brand">
-        <div className="flex items-center margin-left-10">
+        <div className="flex items-center margin-left-10 cursor-pointer" onClick={() => window.location.href = "/"}>
           <img
             src="https://res.cloudinary.com/dqyqncjpd/image/upload/f_auto,q_auto/v1/Port/pq6dvblperd74i8wyccg"
             className="w-7"

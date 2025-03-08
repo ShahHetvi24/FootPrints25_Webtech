@@ -47,8 +47,8 @@ const LoginPage = ({ onLogin }) => {
           onChange={(e) => setUsername(e.target.value)}
         />
         <button onClick={handleLogin}>Enter</button>
-        <p className="bg-black/90">Enter a username to continue or remain anonymous</p>
       </div>
+        <span className="bg-black/70">Enter a username to continue or remain anonymous</span>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { io } from "socket.io-client";
 import axios from "axios";
+import { motion } from "framer-motion";
 // import "./App.css";
 
 // Components
@@ -41,20 +42,48 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div className="login-container">
-      <h2 className="login-title">Welcome to DarkRoom</h2>
-      <div className="login-input">
+    <motion.div
+      className="login-container"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <motion.h2
+        className="login-title"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        Welcome to DarkRoom
+      </motion.h2>
+      <motion.div
+        className="login-input"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
         <input
           type="text"
           placeholder="Username (optional)"
           onChange={(e) => setUsername(e.target.value)}
         />
-        <button onClick={handleLogin}>Enter</button>
-      </div>
-      <span className="bg-black/70">
+        <motion.button
+          onClick={handleLogin}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Enter
+        </motion.button>
+      </motion.div>
+      <motion.span
+        className="bg-black/70"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+      >
         Enter a username to continue or remain anonymous
-      </span>
-    </div>
+      </motion.span>
+    </motion.div>
   );
 };
 

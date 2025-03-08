@@ -55,7 +55,7 @@ function Navbar() {
       </div>
 
       <div className="nav-links">
-        <a href="/">TeaTok Rooms</a>
+        <a href="/rooms">TeaTok Rooms</a>
         <a href="/confessions">Public Confessions</a>
         <a href="/create-secret">Custom TeaToks</a>
       </div>

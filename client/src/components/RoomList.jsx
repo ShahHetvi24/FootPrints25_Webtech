@@ -2,19 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import "./RoomsList.css";
 
 function RoomsList({ onRoomSelect, activeRoom }) {
   const [rooms, setRooms] = useState([]);
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomDescription, setNewRoomDescription] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [hoverInfo, setHoverInfo] = useState({
-    visible: false,
-    description: "",
-    x: 0,
-    y: 0,
-  });
 
   useEffect(() => {
     fetchRooms();
@@ -81,30 +74,6 @@ function RoomsList({ onRoomSelect, activeRoom }) {
     }
   };
 
-  const handleMouseEnter = (event, description) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setHoverInfo({
-      visible: true,
-      description: description || "No description provided",
-      x: event.clientX,
-      y: rect.bottom + window.scrollY, // Position below the list item
-    });
-  };
-
-  const handleMouseLeave = () => {
-    setHoverInfo({ ...hoverInfo, visible: false });
-  };
-
-  const handleMouseMove = (event) => {
-    if (hoverInfo.visible) {
-      setHoverInfo({
-        ...hoverInfo,
-        x: event.clientX,
-        y: event.clientY + 20, // Position below cursor
-      });
-    }
-  };
-
   return (
     <div className="rooms-list">
       {/* ToastContainer - place this once in your component */}
@@ -145,12 +114,9 @@ function RoomsList({ onRoomSelect, activeRoom }) {
             key={room._id}
             className={room._id === activeRoom ? "active" : ""}
             onClick={() => onRoomSelect(room._id)}
-            onMouseEnter={(e) => handleMouseEnter(e, room.description)}
-            onMouseLeave={handleMouseLeave}
-            onMouseMove={handleMouseMove}
           >
             <h3>{room.name}</h3>
-            {/* <p>{room.description}</p> */}
+            <p>{room.description}</p>
           </li>
         ))}
         {rooms.length === 0 && !showCreateForm && (
@@ -159,26 +125,6 @@ function RoomsList({ onRoomSelect, activeRoom }) {
           </li>
         )}
       </ul>
-
-      {hoverInfo.visible && (
-        <div
-          className="hover-description"
-          style={{
-            position: "absolute",
-            left: `${hoverInfo.x}px`,
-            top: `${hoverInfo.y}px`,
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            color: "white",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            zIndex: 1000,
-            maxWidth: "300px",
-            pointerEvents: "none", // So it doesn't interfere with other interactions
-          }}
-        >
-          {hoverInfo.description}
-        </div>
-      )}
     </div>
   );
 }

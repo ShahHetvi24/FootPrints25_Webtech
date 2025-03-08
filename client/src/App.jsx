@@ -110,6 +110,7 @@ const LoginPage = ({ onLogin }) => {
 };
 
 // Rooms Component with enhanced animations
+// Rooms Component without animations
 const RoomsPage = ({ username, socket }) => {
   const [activeRoom, setActiveRoom] = useState(null);
 
@@ -122,151 +123,28 @@ const RoomsPage = ({ username, socket }) => {
     setActiveRoom(roomId);
   };
 
-  // Enhanced animation variants
-  const containerVariants = {
-    initial: { opacity: 0 },
-    animate: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.1,
-      },
-    },
-    exit: {
-      opacity: 0,
-      transition: {
-        duration: 0.4,
-        staggerChildren: 0.05,
-      },
-    },
-  };
-
-  const roomsListVariants = {
-    initial: { opacity: 0, x: -100 },
-    animate: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-      },
-    },
-    exit: {
-      opacity: 0,
-      x: -50,
-      transition: { duration: 0.3 },
-    },
-  };
-
-  const chatContainerVariants = {
-    initial: { opacity: 0, x: 100 },
-    animate: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        type: "spring",
-        stiffness: 80,
-        damping: 15,
-        delay: 0.2,
-      },
-    },
-    exit: {
-      opacity: 0,
-      x: 50,
-      transition: { duration: 0.3 },
-    },
-  };
-
-  const welcomeMessageVariants = {
-    initial: { opacity: 0, scale: 0.9 },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        delay: 0.3,
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.95,
-      transition: { duration: 0.2 },
-    },
-  };
-
-  const titleVariants = {
-    initial: { opacity: 0, y: -20 },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        delay: 0.5,
-      },
-    },
-  };
-
-  const subtitleVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        delay: 0.7,
-      },
-    },
-  };
-
   return (
-    <motion.div
-      className="main-container"
-      variants={containerVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-    >
-      <motion.div className="rooms-container" variants={roomsListVariants}>
+    <div className="main-container">
+      <div className="rooms-container">
         <RoomsList onRoomSelect={joinRoom} activeRoom={activeRoom} />
-      </motion.div>
-      <motion.div className="chat-container" variants={chatContainerVariants}>
-        <AnimatePresence mode="wait">
-          {activeRoom ? (
-            <motion.div
-              key="chat"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{
-                type: "spring",
-                stiffness: 200,
-                damping: 20,
-              }}
-            >
-              <ChatComponent
-                room={activeRoom}
-                username={username}
-                socket={socket}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="welcome"
-              className="select-room-message"
-              variants={welcomeMessageVariants}
-            >
-              <motion.h2 variants={titleVariants}>
-                Welcome to TeaTok Room
-              </motion.h2>
-              <motion.p variants={subtitleVariants}>
-                Select a room from the left sidebar to start chatting
-              </motion.p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </motion.div>
+      </div>
+      <div className="chat-container">
+        {activeRoom ? (
+          <div key="chat">
+            <ChatComponent
+              room={activeRoom}
+              username={username}
+              socket={socket}
+            />
+          </div>
+        ) : (
+          <div key="welcome" className="select-room-message">
+            <h2>Welcome to TeaTok Room</h2>
+            <p>Select a room from the left sidebar to start chatting</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

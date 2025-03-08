@@ -16,6 +16,7 @@ import ConfessionFeed from "./components/ConfessionFeed";
 import CreateSecretMessage from "./components/CreateSecretMessage";
 import ViewSecretMessage from "./components/ViewSecretMessage";
 import Navbar from "./components/Navbar";
+import LetterGlitch from "./components/LetterGlitch";
 
 // Set up axios defaults
 axios.defaults.baseURL = "https://footprints25-webtech.onrender.com/";
@@ -79,7 +80,16 @@ function App() {
 
   return (
     <Router>
-      <div className="app-container">
+      <div className="app-container relative">
+      <div className="fixed inset-0 z-0">
+          <LetterGlitch 
+            glitchColors={['#F7F7FF', '#A1525F', '#F9AAAD']} 
+            glitchSpeed={100}
+            outerVignette={true}
+            smooth={true}
+          />
+        </div>
+        <div className="relative z-10 flex flex-col h-screen">
         <Navbar
           isLoggedIn={isLoggedIn}
           username={username}
@@ -107,7 +117,7 @@ function App() {
                       />
                     ) : (
                       <div className="select-room-message">
-                        <h2>Welcome to Secret Confessions</h2>
+                        <h2>Welcome to TeaTok Room</h2>
                         <p>
                           Select a room from the left sidebar to start chatting
                         </p>
@@ -117,14 +127,17 @@ function App() {
                 </div>
               ) : (
                 <div className="login-container">
-                  <h2>Welcome to Secret Confessions</h2>
-                  <p>Enter a username to continue or remain anonymous</p>
+                  <h2>Welcome to DarkRoom</h2>
+                  <div className="login-input">
+
                   <input
                     type="text"
                     placeholder="Username (optional)"
                     onChange={(e) => setUsername(e.target.value)}
-                  />
+                    />
                   <button onClick={() => handleLogin(username)}>Enter</button>
+                    <p>Enter a username to continue or remain anonymous</p>
+                    </div>
                 </div>
               )
             }
@@ -141,6 +154,7 @@ function App() {
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        </div>
       </div>
     </Router>
   );

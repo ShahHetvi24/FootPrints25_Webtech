@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 // import "./ChatComponent.css";
+import { SendHorizontal } from "lucide-react";
 
 function ChatComponent({ room, username, socket }) {
   const [message, setMessage] = useState("");
@@ -79,7 +80,7 @@ function ChatComponent({ room, username, socket }) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
-        <button type="submit">Send</button>
+        <button type="submit"><SendHorizontal /></button>
       </form>
     </div>
   );

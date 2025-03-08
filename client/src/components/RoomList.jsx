@@ -49,7 +49,7 @@ function RoomsList({ onRoomSelect, activeRoom }) {
   return (
     <div className="rooms-list">
       <div className="rooms-header">
-        <h2>Chat Rooms</h2>
+        <h2>TeaTok Rooms</h2>
         <button
           className="new-room-btn"
           onClick={() => setShowCreateForm(!showCreateForm)}

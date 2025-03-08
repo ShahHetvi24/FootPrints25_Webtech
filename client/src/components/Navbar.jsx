@@ -6,13 +6,17 @@ function Navbar({ isLoggedIn, username, onLogout }) {
   return (
     <nav className="navbar">
       <div className="nav-brand">
-        <Link to="/">Secret Confessions</Link>
+        <div className='flex items-center margin-left-10'>
+
+        <img src="../assets/darkRoom.png" className='w-7' alt="" />
+        <Link to="/">DarkRoom</Link>
+        </div>
       </div>
 
       <div className="nav-links">
-        <Link to="/">Chat Rooms</Link>
+        <Link to="/">TeaTok Rooms</Link>
         <Link to="/confessions">Public Confessions</Link>
-        <Link to="/create-secret">Create Secret Message</Link>
+        <Link to="/create-secret">Custom TeaToks</Link>
       </div>
 
       <div className="nav-auth">

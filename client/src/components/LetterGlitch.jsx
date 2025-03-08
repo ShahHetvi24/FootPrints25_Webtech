@@ -90,7 +90,7 @@ const LetterGlitch = ({
       const x = (index % grid.current.columns) * charWidth;
       const y = Math.floor(index / grid.current.columns) * charHeight;
       ctx.fillStyle = letter.color;
-      ctx.globalAlpha = 0.1; // Reduce opacity
+      ctx.globalAlpha = 0.15; // Reduce opacity
       ctx.fillText(letter.char, x, y);
     });
   };
